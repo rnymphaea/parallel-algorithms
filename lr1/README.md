@@ -12,8 +12,6 @@
 
 Метрики производительности приводить с осреднением, в отчете построить графики.  
 
----
-
 ## Установка и запуск
 ```bash
 git clone https://github.com/rnymphaea/parallel-algorithms.git && \
