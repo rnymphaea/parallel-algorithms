@@ -1,59 +1,7 @@
 #include "../include/Matrix.h"
 #include "../include/MatrixMultiplier.h"
-
-#include <unistd.h>
-#include <string>
-#include <cstdlib>
-#include <getopt.h> 
-
-struct Options {
-  std::string fileA;
-  std::string fileB;
-  size_t rows = 4;
-  size_t cols = 4;
-};
-
-Options parseOptions(int argc, char* argv[]) {
-    Options opts;
-    int opt;
-    int longIndex = 0;
-  
-    struct option longOpts[] = {
-        {"rows",    required_argument, 0, 'r'},
-        {"columns", required_argument, 0, 'c'},
-        {"path-a",  required_argument, 0, 'a'},
-        {"path-b",  required_argument, 0, 'b'},
-        {"help",    no_argument,       0, 'h'},
-        {0, 0, 0, 0}
-    };
-
-    while ((opt = getopt_long(argc, argv, "r:c:a:b:h", longOpts, &longIndex)) != -1) {
-        switch (opt) {
-        case 'r':
-            opts.rows = std::stoi(optarg);
-            break;
-        case 'c':
-            opts.cols = std::stoi(optarg);
-            break;
-        case 'a':
-            opts.fileA = optarg;
-            break;
-        case 'b':
-            opts.fileB = optarg;
-            break;
-        case 'h':
-        default:
-            std::cout << "Usage:\n";
-            std::cout << "  -r M            Num rows\n";
-            std::cout << "  -c N            Num columns\n";
-            std::cout << "  -path-a FILE    Matrix A from file\n";
-            std::cout << "  -path-b FILE    Matrix B from file\n";
-            exit(0);
-        }
-    }
-
-    return opts;
-}
+#include "../include/Timer.h"
+#include "../include/options.h"
 
 int main(int argc, char* argv[]) {
     Options opts = parseOptions(argc, argv);
@@ -79,30 +27,49 @@ int main(int argc, char* argv[]) {
     }
     
     Matrix C_single(A.numRows(), B.numCols());
-    double timeSingle = MatrixMultiplier::measureTime([&]() {
-        C_single = MatrixMultiplier::multiplySingleThread(A, B);
-    });
-    std::cout << "\nSingle-threaded multiplication time: " << timeSingle << " sec\n";
+
+    if (opts.measureTime) {
+        double timeSingle = Timer::measureAverageTime([&]() {
+            C_single = MatrixMultiplier::multiplySingleThread(A, B);
+        });
+        std::cout << "\nSingle-threaded multiplication time: " << timeSingle << " sec\n";
+    } else {
+         C_single = MatrixMultiplier::multiplySingleThread(A, B);
+    }
 
     Matrix C_multi(A.numRows(), B.numCols());
     size_t numThreads = std::thread::hardware_concurrency();
-    double timeMulti = MatrixMultiplier::measureTime([&]() {
+
+    if (opts.measureTime) {
+        double timeMulti = Timer::measureAverageTime([&]() {
+            C_multi = MatrixMultiplier::multiplyMultiThread(A, B, numThreads);
+        });
+        std::cout << "Multi-threaded multiplication time (" << numThreads << " threads): " << timeMulti << " sec\n";
+    } else {
         C_multi = MatrixMultiplier::multiplyMultiThread(A, B, numThreads);
-    });
-    std::cout << "Multi-threaded multiplication time (" << numThreads << " threads): " << timeMulti << " sec\n";
-    
+    }
+
     Matrix C_async(A.numRows(), B.numCols());
     size_t numTasks = std::thread::hardware_concurrency();
-    double timeAsync = MatrixMultiplier::measureTime([&]() {
+
+    if (opts.measureTime) {
+        double timeAsync = Timer::measureAverageTime([&]() {
+            C_async = MatrixMultiplier::multiplyAsync(A, B, numTasks);
+        });
+        std::cout << "Async multiplication time (" << numTasks << " tasks): " << timeAsync << " sec\n";
+    } else {
         C_async = MatrixMultiplier::multiplyAsync(A, B, numTasks);
-    });
-    std::cout << "Async multiplication time (" << numTasks << " tasks): " << timeAsync << " sec\n";
+    }
 
     bool equal = MatrixMultiplier::areEqual(C_single, C_multi);
     equal = MatrixMultiplier::areEqual(C_single, C_async);
-    std::cout << "Results match? " << (equal ? "Yes" : "No") << std::endl;
 
-    if (C_single.numRows() <= 10 && C_single.numCols() <= 10) {
+    std::cout << "\nResults match? " << (equal ? "Yes" : "No") << std::endl;
+
+    if (!opts.output.empty()) {
+        C_single.saveToFile(opts.output);
+        std::cout << "Result saved to " << opts.output << "\n";
+    } else if (C_single.numRows() <= 10 && C_single.numCols() <= 10) {
         std::cout << "\nResult matrix:\n";
         C_single.print();
     } else {
