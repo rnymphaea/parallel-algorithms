@@ -15,6 +15,7 @@ struct Options {
     size_t cols = 4;
     bool measureTime = false;
     size_t repeats = 3;
+    int threads = 0;
     std::string output;
 };
 

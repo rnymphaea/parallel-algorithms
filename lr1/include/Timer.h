@@ -7,7 +7,7 @@
 class Timer {
 public:
     template <typename Func>
-    static double measureAverageTime(Func f, size_t repeats = 1) {
+    static double measureAverageTime(Func f, size_t repeats = 3) {
         double total = 0.0;
         for (size_t i = 0; i < repeats; ++i) {
             auto start = std::chrono::high_resolution_clock::now();

@@ -13,11 +13,12 @@ Options parseOptions(int argc, char* argv[]) {
         {"time",    no_argument,       0, 't'},
         {"repeats", required_argument, 0, 'n'},
         {"output",  required_argument, 0, 'o'},
+        {"threads", required_argument, 0, 'p'},
         {"help",    no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "r:c:a:b:tn:o:h", longOpts, &longIndex)) != -1) {
+    while ((opt = getopt_long(argc, argv, "r:c:a:b:tn:p:o:h", longOpts, &longIndex)) != -1) {
         switch (opt) {
         case 'r':
             opts.rows = std::stoi(optarg);
@@ -37,6 +38,9 @@ Options parseOptions(int argc, char* argv[]) {
         case 'n':
             opts.repeats = std::stoi(optarg);
             break;
+        case 'p':
+            opts.threads = std::stoi(optarg);
+            break;
         case 'o':
             opts.output = optarg;
             break;
@@ -51,6 +55,7 @@ Options parseOptions(int argc, char* argv[]) {
             std::cout << "  --path-b [-b] FILE       Load matrix B from the specified file\n";
             std::cout << "  --time [-t]              Measure execution time for multi-threaded and async multiplication\n";
             std::cout << "  --repeats [-n] N         Number of repetitions to average timing results (default: 3)\n";
+            std::cout << "  --threads [-p] N         Number of threads (tasks) to for multi-threaded (async) multiplication\n";
             std::cout << "  --output [-o] FILE       Specify output file to save result\n";
             std::cout << "  --help [-h]              Display this help message and exit\n\n";
             std::cout << "Notes:\n";
