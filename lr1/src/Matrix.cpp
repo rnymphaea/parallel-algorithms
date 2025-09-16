@@ -15,7 +15,7 @@ void Matrix::fillRandom(double minVal, double maxVal) {
 
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
-            data[i][j] = dist(gen);
+        data[i][j] = dist(gen);
         }
     }
 }
@@ -27,7 +27,7 @@ void Matrix::saveToFile(const std::string& filename) const {
     out << rows << " " << cols << "\n";
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
-            out << std::fixed << std::setprecision(2) << data[i][j] << " ";
+        out << std::fixed << std::setprecision(2) << data[i][j] << " ";
         }
         out << "\n";
     }
@@ -43,16 +43,17 @@ Matrix Matrix::loadFromFile(const std::string& filename) {
 
     for (size_t i = 0; i < r; i++) {
         for (size_t j = 0; j < c; j++) {
-            in >> m(i, j);
+        in >> m(i, j);
         }
     }
+
     return m;
 }
 
 void Matrix::print() const {
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
-            std::cout << std::setw(8) << std::fixed << std::setprecision(2) << data[i][j] << " ";
+        std::cout << std::setw(8) << std::fixed << std::setprecision(2) << data[i][j] << " ";
         }
         std::cout << "\n";
     }
