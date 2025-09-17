@@ -34,7 +34,7 @@ make clean
 
 ## CLI
 Программа поддерживает **CLI-аргументы**:
-```bash
+```
 Usage: ./mm [OPTIONS]
 
 Matrix multiplication program with single-threaded, multi-threaded, and async implementations.
