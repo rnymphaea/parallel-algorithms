@@ -17,6 +17,7 @@ struct Options {
     size_t repeats = 3;
     int threads = 0;
     std::string output;
+    bool debug = false;
 };
 
 Options parseOptions(int argc, char* argv[]);

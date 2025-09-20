@@ -5,8 +5,8 @@
 
 #define MAX_PRINT_MATRIX_SIZE 10
 
-void printMatrixInfo(const Matrix &m, std::string name) {
-    if (m.numRows() <= MAX_PRINT_MATRIX_SIZE && m.numCols() <= MAX_PRINT_MATRIX_SIZE) {
+void printMatrixInfo(const Matrix &m, std::string name, bool debug) {
+    if ((m.numRows() <= MAX_PRINT_MATRIX_SIZE && m.numCols() <= MAX_PRINT_MATRIX_SIZE) || debug) {
         std::cout << "Matrix " << name <<":\n";
         m.print();
     } else {
@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
     if (opts.fileA.empty()) A.fillRandom();
     if (opts.fileB.empty()) B.fillRandom();
     
-    printMatrixInfo(A, "A");
-    printMatrixInfo(B, "B");
+    printMatrixInfo(A, "A", opts.debug);
+    printMatrixInfo(B, "B", opts.debug);
     
     Matrix C_single(A.numRows(), B.numCols());
 
@@ -68,10 +68,16 @@ int main(int argc, char* argv[]) {
     std::cout << "\nResults match: " << (equal ? "yes" : "no") << std::endl;
 
     if (!opts.output.empty()) {
+        if (opts.debug) {
+            C_multi.saveToFile(opts.output);
+            C_async.saveToFile(opts.output);
+        }
         C_single.saveToFile(opts.output);
         std::cout << "Result saved to " << opts.output << "\n";
     } else {
-        printMatrixInfo(C_single, "Result");
+        printMatrixInfo(C_multi, "Multi", opts.debug);
+        printMatrixInfo(C_async, "Async", opts.debug);
+        printMatrixInfo(C_single, "Result", opts.debug);
     }
 
     return 0;

@@ -40,21 +40,21 @@ Usage: ./mm [OPTIONS]
 Matrix multiplication program with single-threaded, multi-threaded, and async implementations.
 
 Options:
-  --rows [-r] M            Number of rows for randomly generated matrices (default: 4)
-  --columns [-c] N         Number of columns for randomly generated matrices (default: 4)
-  --path-a [-a] FILE       Load matrix A from the specified file
-  --path-b [-b] FILE       Load matrix B from the specified file
-  --time [-t]              Measure execution time for multi-threaded and async multiplication
-  --repeats [-n] N         Number of repetitions to average timing results (default: 3)
-  --threads [-p] N         Number of threads (tasks) to use for multi-threaded (async) multiplication
-  --output [-o] FILE       Specify output file to save result
-  --help [-h]              Display this help message and exit
+  -r, --rows M            Number of rows for randomly generated matrices (default: 4)
+  -c, --columns N         Number of columns for randomly generated matrices (default: 4)
+  -a, --path-a FILE       Load matrix A from the specified file
+  -b, --path-b FILE       Load matrix B from the specified file
+  -T, --time              Measure execution time for multi-threaded and async multiplication
+  -n, --repeats N         Number of repetitions to average timing results (default: 3)
+  -t, --threads N         Number of threads (tasks) to for multi-threaded (async) multiplication (default: number of hardware threads available on the system)
+  -o, --output FILE       Specify output file to save result
+  -d, --debug             Enable debug mode
+  -h, --help              Display this help message and exit
 
 Notes:
 - If --path-a or --path-b are not specified, the matrices will be generated randomly.
 - If --time is not specified, the program will compute the result without measuring execution time,
   even if --repeats is given.
-- Matrices larger than 10x10 are not printed to the console.
+- Matrices larger than 10x10 will not be displayed on the console, unless the --debug flag is used.
 - You can optionally add --output FILE to save the result matrix to a file.
 ```
-

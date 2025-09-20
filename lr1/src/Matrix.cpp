@@ -21,7 +21,7 @@ void Matrix::fillRandom(double minVal, double maxVal) {
 }
 
 void Matrix::saveToFile(const std::string& filename) const {
-    std::ofstream out(filename);
+    std::ofstream out(filename, std::ios::app);
     if (!out) throw std::runtime_error("error: cannot open file to write");
 
     out << rows << " " << cols << "\n";
