@@ -6,20 +6,21 @@ Options parseOptions(int argc, char* argv[]) {
     int longIndex = 0;
   
     struct option longOpts[] = {
-        {"rows",    required_argument, 0, 'r'},
-        {"columns", required_argument, 0, 'c'},
-        {"path-a",  required_argument, 0, 'a'},
-        {"path-b",  required_argument, 0, 'b'},
-        {"time",    no_argument,       0, 'T'},
-        {"repeats", required_argument, 0, 'n'},
-        {"output",  required_argument, 0, 'o'},
-        {"threads", required_argument, 0, 't'},
-        {"debug",   no_argument,       0, 'd'},
-        {"help",    no_argument,       0, 'h'},
+        {"rows",       required_argument, 0, 'r'},
+        {"columns",    required_argument, 0, 'c'},
+        {"path-a",     required_argument, 0, 'a'},
+        {"path-b",     required_argument, 0, 'b'},
+        {"time",       no_argument,       0, 'T'},
+        {"repeats",    required_argument, 0, 'n'},
+        {"output",     required_argument, 0, 'o'},
+        {"threads",    required_argument, 0, 't'},
+        {"debug",      no_argument,       0, 'd'},
+        {"export-csv", required_argument, 0, 'e'},
+        {"help",       no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "r:c:a:b:Tn:t:o:dh", longOpts, &longIndex)) != -1) {
+    while ((opt = getopt_long(argc, argv, "r:c:a:b:Tn:t:o:de:h", longOpts, &longIndex)) != -1) {
         switch (opt) {
         case 'r':
             opts.rows = std::stoi(optarg);
@@ -48,6 +49,9 @@ Options parseOptions(int argc, char* argv[]) {
         case 'd':
             opts.debug = true;
             break;
+        case 'e':
+            opts.csv = optarg;
+            break;
         case 'h':
         default:
             std::cout << "Usage: ./mm [OPTIONS]\n\n";
@@ -62,6 +66,8 @@ Options parseOptions(int argc, char* argv[]) {
             std::cout << "  -t, --threads N         Number of threads (tasks) to for multi-threaded (async) multiplication (default: number of hardware threads available on the system)\n";
             std::cout << "  -o, --output FILE       Specify output file to save result\n";
             std::cout << "  -d, --debug             Enable debug mode\n";
+            std::cout << "  -e, --export-csv FILE   Export timing results to CSV file (append mode).\n";
+            std::cout << "                          Format: threads,single,multi,async\n";
             std::cout << "  -h, --help              Display this help message and exit\n\n";
             std::cout << "Notes:\n";
             std::cout << "- If --path-a or --path-b are not specified, the matrices will be generated randomly.\n";

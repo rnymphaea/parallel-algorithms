@@ -18,6 +18,7 @@ struct Options {
     int threads = 0;
     std::string output;
     bool debug = false;
+    std::string csv;
 };
 
 Options parseOptions(int argc, char* argv[]);

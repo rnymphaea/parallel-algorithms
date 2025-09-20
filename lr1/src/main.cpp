@@ -3,6 +3,8 @@
 #include "../include/Timer.h"
 #include "../include/options.h"
 
+#include <fstream>
+
 #define MAX_PRINT_MATRIX_SIZE 10
 
 void printMatrixInfo(const Matrix &m, std::string name, bool debug) {
@@ -29,8 +31,10 @@ int main(int argc, char* argv[]) {
     
     Matrix C_single(A.numRows(), B.numCols());
 
+    double timeSingle, timeMulti, timeAsync;
+
     if (opts.measureTime) {
-        double timeSingle = Timer::measureAverageTime([&]() {
+        timeSingle = Timer::measureAverageTime([&]() {
             C_single = MatrixMultiplier::multiplySingleThread(A, B);
         }, opts.repeats);
         std::cout << "\nSingle-threaded multiplication time: " << timeSingle << " sec\n";
@@ -42,7 +46,7 @@ int main(int argc, char* argv[]) {
     size_t numThreads = opts.threads > 0 ? opts.threads : std::thread::hardware_concurrency();
 
     if (opts.measureTime) {
-        double timeMulti = Timer::measureAverageTime([&]() {
+        timeMulti = Timer::measureAverageTime([&]() {
             C_multi = MatrixMultiplier::multiplyMultiThread(A, B, numThreads);
         }, opts.repeats);
         std::cout << "Multi-threaded multiplication time (" << numThreads << " threads): " << timeMulti << " sec\n";
@@ -54,7 +58,7 @@ int main(int argc, char* argv[]) {
     size_t numTasks = numThreads;
 
     if (opts.measureTime) {
-        double timeAsync = Timer::measureAverageTime([&]() {
+        timeAsync = Timer::measureAverageTime([&]() {
             C_async = MatrixMultiplier::multiplyAsync(A, B, numTasks);
         }, opts.repeats);
         std::cout << "Async multiplication time (" << numTasks << " tasks): " << timeAsync << " sec\n";
@@ -78,6 +82,21 @@ int main(int argc, char* argv[]) {
         printMatrixInfo(C_multi, "Multi", opts.debug);
         printMatrixInfo(C_async, "Async", opts.debug);
         printMatrixInfo(C_single, "Result", opts.debug);
+    }
+
+    if (!opts.csv.empty() && opts.measureTime) {
+        std::ofstream csv(opts.csv, std::ios::app);
+        if (!csv) {
+            std::cerr << "Error: cannot open CSV file for writing\n";
+            return 1;
+        }
+        if (csv.tellp() == 0) {
+            csv << "threads,single,multi,async\n";
+        }
+        csv << numThreads << "," << timeSingle << "," << timeMulti << "," << timeAsync << "\n";
+        if (opts.debug) {
+            std::cout << "Exported timings to " << opts.csv << std::endl;
+        }
     }
 
     return 0;
