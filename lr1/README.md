@@ -49,6 +49,8 @@ Options:
   -t, --threads N         Number of threads (tasks) to for multi-threaded (async) multiplication (default: number of hardware threads available on the system)
   -o, --output FILE       Specify output file to save result
   -d, --debug             Enable debug mode
+  -e, --export-csv FILE   Export timing results to CSV file (append mode).
+                          Format: threads,single,multi,async
   -h, --help              Display this help message and exit
 
 Notes:
@@ -57,4 +59,6 @@ Notes:
   even if --repeats is given.
 - Matrices larger than 10x10 will not be displayed on the console, unless the --debug flag is used.
 - You can optionally add --output FILE to save the result matrix to a file.
+
+```
 ```
