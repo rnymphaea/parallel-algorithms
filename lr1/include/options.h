@@ -19,7 +19,10 @@ struct Options {
     std::string output;
     bool debug = false;
     std::string csv;
+    size_t blockSize = 64;
 };
+
+std::ostream& operator<<(std::ostream& os, const Options& opts);
 
 Options parseOptions(int argc, char* argv[]);
 

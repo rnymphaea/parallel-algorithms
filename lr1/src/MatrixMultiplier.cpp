@@ -25,15 +25,27 @@ Matrix MatrixMultiplier::multiplyMultiThread(const Matrix& A, const Matrix& B, s
     }
 
     Matrix C(A.numRows(), B.numCols());
+    size_t block = this->blockSize; 
 
-    auto worker = [&](size_t rowStart, size_t rowEnd) {
-        for (size_t i = rowStart; i < rowEnd; i++) {
-            for (size_t j = 0; j < B.numCols(); j++) {
-                double sum = 0.0;
-                for (size_t k = 0; k < A.numCols(); k++) {
-                    sum += A(i, k) * B(k, j);
+    auto worker = [&](size_t iStart, size_t iEnd) {
+        size_t m = B.numCols();
+        size_t kdim = A.numCols();
+
+        for (size_t i0 = iStart; i0 < iEnd; i0 += block) {
+            for (size_t j0 = 0; j0 < m; j0 += block) {
+                for (size_t k0 = 0; k0 < kdim; k0 += block) {
+                    size_t iMax = std::min(i0 + block, iEnd);
+                    size_t jMax = std::min(j0 + block, m);
+                    size_t kMax = std::min(k0 + block, kdim);
+
+                    for (size_t i = i0; i < iMax; i++) {
+                        for (size_t k = k0; k < kMax; k++) {
+                            for (size_t j = j0; j < jMax; j++) {
+                                C(i, j) += A(i, k) * B(k, j);
+                            }
+                        }
+                    }
                 }
-                C(i, j) = sum;
             }
         }
     };
@@ -62,18 +74,33 @@ Matrix MatrixMultiplier::multiplyAsync(const Matrix& A, const Matrix& B, size_t 
     }
 
     Matrix C(A.numRows(), B.numCols());
+    size_t block = this->blockSize;
 
-    auto worker = [&](size_t rowStart, size_t rowEnd) -> Matrix {
-        Matrix partial(rowEnd - rowStart, B.numCols());
-        for (size_t i = rowStart; i < rowEnd; ++i) {
-            for (size_t j = 0; j < B.numCols(); ++j) {
-                double sum = 0.0;
-                for (size_t k = 0; k < A.numCols(); ++k) {
-                    sum += A(i, k) * B(k, j);
+    auto worker = [&](size_t iStart, size_t iEnd) -> Matrix {
+        Matrix partial(iEnd - iStart, B.numCols());
+
+        size_t n = iEnd - iStart;
+        size_t m = B.numCols();
+        size_t kdim = A.numCols();
+
+        for (size_t i0 = 0; i0 < n; i0 += block) {
+            for (size_t j0 = 0; j0 < m; j0 += block) {
+                for (size_t k0 = 0; k0 < kdim; k0 += block) {
+                    size_t iMax = std::min(i0 + block, n);
+                    size_t jMax = std::min(j0 + block, m);
+                    size_t kMax = std::min(k0 + block, kdim);
+
+                    for (size_t i = i0; i < iMax; i++) {
+                        for (size_t k = k0; k < kMax; k++) {
+                            for (size_t j = j0; j < jMax; j++) {
+                                partial(i, j) += A(iStart + i, k) * B(k, j);
+                            }
+                        }
+                    }
                 }
-                partial(i - rowStart, j) = sum;
             }
         }
+
         return partial;
     };
 

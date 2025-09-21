@@ -11,10 +11,10 @@ PYTHON = python3
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
 
-THREADS ?= 1 2 4 8 16 32 64
-ROWS ?= 1024
-COLS ?= 1024
-REPEATS ?= 5
+THREADS ?= 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+ROWS ?= 512
+COLS ?= 512
+REPEATS ?= 3
 CSV ?= time.csv
 PLOT ?= performance.png
 

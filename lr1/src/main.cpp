@@ -19,6 +19,11 @@ void printMatrixInfo(const Matrix &m, std::string name, bool debug) {
 
 int main(int argc, char* argv[]) {
     Options opts = parseOptions(argc, argv);
+    if (opts.debug) {
+        std::cout << opts << "\n";
+    }
+
+    MatrixMultiplier multiplier(opts.blockSize);
 
     Matrix A = opts.fileA.empty() ? Matrix(opts.rows, opts.cols) : Matrix::loadFromFile(opts.fileA);
     Matrix B = opts.fileB.empty() ? Matrix(opts.rows, opts.cols) : Matrix::loadFromFile(opts.fileB);
@@ -35,11 +40,11 @@ int main(int argc, char* argv[]) {
 
     if (opts.measureTime) {
         timeSingle = Timer::measureAverageTime([&]() {
-            C_single = MatrixMultiplier::multiplySingleThread(A, B);
+            C_single = multiplier.multiplySingleThread(A, B);
         }, opts.repeats);
         std::cout << "\nSingle-threaded multiplication time: " << timeSingle << " sec\n";
     } else {
-         C_single = MatrixMultiplier::multiplySingleThread(A, B);
+         C_single = multiplier.multiplySingleThread(A, B);
     }
 
     Matrix C_multi(A.numRows(), B.numCols());
@@ -47,11 +52,11 @@ int main(int argc, char* argv[]) {
 
     if (opts.measureTime) {
         timeMulti = Timer::measureAverageTime([&]() {
-            C_multi = MatrixMultiplier::multiplyMultiThread(A, B, numThreads);
+            C_multi = multiplier.multiplyMultiThread(A, B, numThreads);
         }, opts.repeats);
         std::cout << "Multi-threaded multiplication time (" << numThreads << " threads): " << timeMulti << " sec\n";
     } else {
-        C_multi = MatrixMultiplier::multiplyMultiThread(A, B, numThreads);
+        C_multi = multiplier.multiplyMultiThread(A, B, numThreads);
     }
 
     Matrix C_async(A.numRows(), B.numCols());
@@ -59,11 +64,11 @@ int main(int argc, char* argv[]) {
 
     if (opts.measureTime) {
         timeAsync = Timer::measureAverageTime([&]() {
-            C_async = MatrixMultiplier::multiplyAsync(A, B, numTasks);
+            C_async = multiplier.multiplyAsync(A, B, numTasks);
         }, opts.repeats);
         std::cout << "Async multiplication time (" << numTasks << " tasks): " << timeAsync << " sec\n";
     } else {
-        C_async = MatrixMultiplier::multiplyAsync(A, B, numTasks);
+        C_async = multiplier.multiplyAsync(A, B, numTasks);
     }
 
     bool equal = MatrixMultiplier::areEqual(C_single, C_multi);

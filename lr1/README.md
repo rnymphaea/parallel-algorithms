@@ -51,6 +51,7 @@ Options:
   -d, --debug             Enable debug mode
   -e, --export-csv FILE   Export timing results to CSV file (append mode).
                           Format: threads,single,multi,async
+  -B, --block-size N      Size of block of matrix (default: 64)
   -h, --help              Display this help message and exit
 
 Notes:
@@ -59,6 +60,5 @@ Notes:
   even if --repeats is given.
 - Matrices larger than 10x10 will not be displayed on the console, unless the --debug flag is used.
 - You can optionally add --output FILE to save the result matrix to a file.
-
 ```
 ```

@@ -1,5 +1,21 @@
 #include "../include/options.h"
 
+std::ostream& operator<<(std::ostream& os, const Options& opts) {
+    os << "Options:\n";
+    os << "  fileA: " << (opts.fileA.empty() ? "<none>" : opts.fileA) << "\n";
+    os << "  fileB: " << (opts.fileB.empty() ? "<none>" : opts.fileB) << "\n";
+    os << "  rows: " << opts.rows << "\n";
+    os << "  cols: " << opts.cols << "\n";
+    os << "  measureTime: " << (opts.measureTime ? "true" : "false") << "\n";
+    os << "  repeats: " << opts.repeats << "\n";
+    os << "  threads: " << opts.threads << "\n";
+    os << "  output: " << (opts.output.empty() ? "<none>" : opts.output) << "\n";
+    os << "  debug: " << (opts.debug ? "true" : "false") << "\n";
+    os << "  csv: " << (opts.csv.empty() ? "<none>" : opts.csv) << "\n";
+    os << "  blockSize: " << opts.blockSize << "\n";
+    return os;
+}
+
 Options parseOptions(int argc, char* argv[]) {
     Options opts;
     int opt;
@@ -16,11 +32,12 @@ Options parseOptions(int argc, char* argv[]) {
         {"threads",    required_argument, 0, 't'},
         {"debug",      no_argument,       0, 'd'},
         {"export-csv", required_argument, 0, 'e'},
+        {"block-size", required_argument, 0, 'B'},
         {"help",       no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "r:c:a:b:Tn:t:o:de:h", longOpts, &longIndex)) != -1) {
+    while ((opt = getopt_long(argc, argv, "r:c:a:b:Tn:t:o:de:B:h", longOpts, &longIndex)) != -1) {
         switch (opt) {
         case 'r':
             opts.rows = std::stoi(optarg);
@@ -52,6 +69,9 @@ Options parseOptions(int argc, char* argv[]) {
         case 'e':
             opts.csv = optarg;
             break;
+        case 'B':
+            opts.blockSize = std::stoi(optarg);
+            break;
         case 'h':
         default:
             std::cout << "Usage: ./mm [OPTIONS]\n\n";
@@ -68,6 +88,7 @@ Options parseOptions(int argc, char* argv[]) {
             std::cout << "  -d, --debug             Enable debug mode\n";
             std::cout << "  -e, --export-csv FILE   Export timing results to CSV file (append mode).\n";
             std::cout << "                          Format: threads,single,multi,async\n";
+            std::cout << "  -B, --block-size N      Size of block of matrix (default: 64)\n";
             std::cout << "  -h, --help              Display this help message and exit\n\n";
             std::cout << "Notes:\n";
             std::cout << "- If --path-a or --path-b are not specified, the matrices will be generated randomly.\n";
