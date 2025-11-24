@@ -19,9 +19,9 @@ public:
         all_passed &= check_marked_nodes_removed();
         
         if (all_passed) {
-            std::cout << "✅ ALL INVARIANTS PRESERVED\n";
+            std::cout << "ALL INVARIANTS PRESERVED\n";
         } else {
-            std::cout << "❌ SOME INVARIANTS VIOLATED\n";
+            std::cout << "SOME INVARIANTS VIOLATED\n";
         }
         
         return all_passed;
@@ -33,12 +33,10 @@ private:
         
         FineList list;
         
-        // Insert some values
         for (int i = 0; i < 10; ++i) {
             list.insert(i * 10);
         }
         
-        // Perform concurrent operations
         std::atomic<bool> start{false};
         auto worker = [&]() {
             while (!start.load()) std::this_thread::yield();
@@ -60,13 +58,11 @@ private:
             t.join();
         }
         
-        // The list should still be traversable without infinite loops
-        // This is a basic sanity check - if traversal works, connectivity is preserved
         for (int i = 0; i < 20; ++i) {
-            list.find(i * 10); // Should return relatively quickly
+            list.find(i * 10);
         }
         
-        std::cout << "✅ PASSED\n";
+        std::cout << "PASSED\n";
         return true;
     }
 
@@ -75,24 +71,21 @@ private:
         
         FineList list;
         
-        // Insert and then remove values
         for (int i = 0; i < 50; ++i) {
             list.insert(i);
         }
         
-        // Remove some values
         for (int i = 10; i < 20; ++i) {
             list.remove(i);
         }
         
-        // Concurrent operations to stress the marking mechanism
         std::atomic<bool> start{false};
         auto worker = [&]() {
             while (!start.load()) std::this_thread::yield();
             
             for (int i = 0; i < 100; ++i) {
-                list.find(5);  // Access existing value
-                list.find(15); // Access removed value
+                list.find(5);
+                list.find(15);
                 list.insert(25 + i);
                 list.remove(30 + i);
             }
@@ -108,17 +101,16 @@ private:
             t.join();
         }
         
-        // Verify removed values are gone and existing values are accessible
         for (int i = 0; i < 10; ++i) {
-            assert(list.find(i));  // Should exist
+            assert(list.find(i));
         }
         for (int i = 10; i < 20; ++i) {
-            assert(!list.find(i)); // Should not exist
+            assert(!list.find(i));
         }
         
-        std::cout << "✅ PASSED\n";
+        std::cout << "PASSED\n";
         return true;
     }
 };
 
-#endif // TEST_INVARIANTS_H
+#endif

@@ -1,4 +1,4 @@
-// test_main.cpp
+#include <iostream>
 #include "test_correctness.h"
 #include "test_invariants.h"
 
@@ -9,10 +9,10 @@ int main() {
     bool invariants_preserved = TestInvariants::run_all_invariant_checks();
     
     if (tests_passed && invariants_preserved) {
-        std::cout << "\n🎉 ALL TESTS AND INVARIANT CHECKS PASSED!\n";
+        std::cout << "\nALL TESTS AND INVARIANT CHECKS PASSED!\n";
         return 0;
     } else {
-        std::cout << "\n💥 SOME TESTS FAILED!\n";
+        std::cout << "\nSOME TESTS FAILED!\n";
         return 1;
     }
 }
