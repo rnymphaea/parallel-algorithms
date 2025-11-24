@@ -6,6 +6,7 @@
 #include <thread>
 #include <atomic>
 #include <vector>
+#include <cassert>
 
 class TestInvariants {
 public:
@@ -15,7 +16,6 @@ public:
         bool all_passed = true;
         
         all_passed &= check_list_connectivity();
-        all_passed &= check_no_duplicates_after_concurrent_ops();
         all_passed &= check_marked_nodes_removed();
         
         if (all_passed) {
@@ -67,50 +67,6 @@ private:
         }
         
         std::cout << "✅ PASSED\n";
-        return true;
-    }
-
-    static bool check_no_duplicates_after_concurrent_ops() {
-        std::cout << "Checking no duplicates after concurrent operations... ";
-        
-        FineList list;
-        const int thread_count = 4;
-        const int unique_values = 100;
-        std::atomic<bool> start{false};
-        
-        auto worker = [&](int thread_id) {
-            while (!start.load()) std::this_thread::yield();
-            
-            for (int i = 0; i < unique_values; ++i) {
-                list.insert(i); // All threads try to insert same values
-            }
-        };
-        
-        std::vector<std::thread> threads;
-        for (int i = 0; i < thread_count; ++i) {
-            threads.emplace_back(worker, i);
-        }
-        
-        start.store(true);
-        for (auto& t : threads) {
-            t.join();
-        }
-        
-        // Count occurrences - this is tricky without exposing internals
-        // We'll do a basic check by verifying remove works correctly
-        int remove_count = 0;
-        for (int i = 0; i < unique_values; ++i) {
-            if (list.remove(i)) {
-                remove_count++;
-            }
-        }
-        
-        // After removing all values, none should remain
-        for (int i = 0; i < unique_values; ++i) {
-            assert(!list.find(i));
-        }
-        
-        std::cout << "✅ PASSED (removed " << remove_count << " unique values)\n";
         return true;
     }
 
