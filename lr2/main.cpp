@@ -89,15 +89,12 @@ BenchConfig parse_args(int argc, char** argv) {
                 break;
             case 'f':
                 {
-                    double find_ratio = std::stod(optarg);
-                    double total = config.p_insert + config.p_remove + find_ratio;
-                    if (total > 1.0) {
-                        config.p_insert /= total;
-                        config.p_remove /= total;
-                        find_ratio /= total;
-                    }
-                    config.p_insert = (1.0 - find_ratio) * 0.5;
-                    config.p_remove = (1.0 - find_ratio) * 0.5;
+                double find_ratio = std::stod(optarg);
+                double total = config.p_insert + config.p_remove + find_ratio;
+                if (total > 1.0) {
+                    std::cerr << "Error: Operation ratios sum > 1.0\n";
+                    exit(1);
+                }
                 }
                 break;
             case 'k':

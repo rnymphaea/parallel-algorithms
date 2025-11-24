@@ -4,13 +4,14 @@ INCLUDES := -Iinclude
 SRCDIR := src
 OBJDIR := obj
 BINDIR := bin
+TEST_TARGET := $(BINDIR)/test_list
 
 SOURCES := main.cpp $(SRCDIR)/list_fine.cpp $(SRCDIR)/list_coarse.cpp $(SRCDIR)/utils.cpp
 OBJECTS := $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SOURCES)))
 
 TARGET := $(BINDIR)/list_bench
 
-.PHONY: all clean run
+.PHONY: all clean run test
 
 all: $(TARGET)
 
@@ -28,6 +29,12 @@ $(OBJDIR):
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
+
+test: $(TEST_TARGET)
+	./$(TEST_TARGET)
+
+$(TEST_TARGET): $(OBJECTS) | $(BINDIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OBJECTS) -o $@
 
 clean:
 	rm -rf $(OBJDIR) $(BINDIR) *.csv plots
