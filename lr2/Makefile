@@ -30,7 +30,7 @@ $(BINDIR):
 	mkdir -p $(BINDIR)
 
 clean:
-	rm -rf $(OBJDIR) $(BINDIR) results.csv plots
+	rm -rf $(OBJDIR) $(BINDIR) *.csv plots
 
 run: $(TARGET)
 	./$(TARGET)
