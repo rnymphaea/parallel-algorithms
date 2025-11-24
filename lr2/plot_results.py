@@ -7,21 +7,17 @@ import os
 def plot_results(csv_file):
     df = pd.read_csv(csv_file)
     
-    # Extract config from filename for title
     config_name = os.path.splitext(os.path.basename(csv_file))[0].replace('results_', '')
     if config_name == 'results':
         config_name = 'default'
     
-    # Get operation ratios for subtitle
     ratios = df[['p_insert', 'p_remove']].iloc[0]
     find_ratio = 1.0 - ratios['p_insert'] - ratios['p_remove']
     ops_per_thread = df['ops_per_thread'].iloc[0]
     key_range = df['key_range'].iloc[0]
     
-    # Create plot
     plt.figure(figsize=(10, 6))
     
-    # Plot: Throughput vs threads
     pivot = df.pivot(index='threads', columns='impl', values='ops_per_sec')
     pivot.plot(marker='o', linewidth=2, markersize=8)
     
@@ -33,13 +29,11 @@ def plot_results(csv_file):
     plt.grid(True, alpha=0.3)
     plt.legend(title='Implementation')
     
-    # Save plot
     os.makedirs('plots', exist_ok=True)
     output_file = f'plots/throughput_{config_name}.png'
     plt.savefig(output_file, dpi=200, bbox_inches='tight')
     print(f"Saved {output_file}")
     
-    # Print summary statistics
     print(f"\n{config_name.upper()} WORKLOAD SUMMARY:")
     print(f"Operation ratios: Insert={ratios['p_insert']:.1%}, "
           f"Remove={ratios['p_remove']:.1%}, Find={find_ratio:.1%}")
@@ -52,7 +46,6 @@ def plot_results(csv_file):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        # Plot all result files
         result_files = [f for f in os.listdir('.') if f.startswith('results') and f.endswith('.csv')]
         if not result_files:
             print("Usage: plot_results.py results.csv")

@@ -17,7 +17,7 @@ bool CoarseList::insert(int value) {
     std::lock_guard<std::mutex> lg(mtx);
     Node** curp = &head;
     while (*curp) {
-        if ((*curp)->value == value) return false; // already present
+        if ((*curp)->value == value) return false;
         curp = &((*curp)->next);
     }
     Node* node = new Node(value);
@@ -49,4 +49,3 @@ bool CoarseList::find(int value) {
     }
     return false;
 }
-

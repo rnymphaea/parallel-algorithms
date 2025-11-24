@@ -12,7 +12,6 @@
 #include "list_coarse.h"
 #include "utils.h"
 
-// Bench configuration with command line overrides
 struct BenchConfig {
     int threads = 1;
     int ops_per_thread = 100000;
@@ -91,14 +90,12 @@ BenchConfig parse_args(int argc, char** argv) {
             case 'f':
                 {
                     double find_ratio = std::stod(optarg);
-                    // Normalize ratios if all three are provided
                     double total = config.p_insert + config.p_remove + find_ratio;
                     if (total > 1.0) {
                         config.p_insert /= total;
                         config.p_remove /= total;
                         find_ratio /= total;
                     }
-                    // Set insert and remove based on find ratio
                     config.p_insert = (1.0 - find_ratio) * 0.5;
                     config.p_remove = (1.0 - find_ratio) * 0.5;
                 }
@@ -124,8 +121,7 @@ BenchConfig parse_args(int argc, char** argv) {
         }
     }
     
-    // Parse thread counts
-    config.threads = 0; // Not used directly, thread_counts used instead
+    config.threads = 0;
     if (config.verbose) {
         std::cout << "Thread counts: " << thread_str << "\n";
     }
@@ -179,7 +175,6 @@ double run_once(const BenchConfig& cfg, const std::string &label, Args&&... args
 int main(int argc, char** argv) {
     BenchConfig config = parse_args(argc, argv);
     
-    // Parse thread counts from command line or use default
     std::vector<int> thread_counts = parse_thread_list([&]() -> std::string {
         for (int i = 1; i < argc; ++i) {
             if (std::string(argv[i]) == "-t" || std::string(argv[i]) == "--threads") {
@@ -217,7 +212,6 @@ int main(int argc, char** argv) {
             std::cout << "\nRunning with " << t << " threads...\n";
         }
 
-        // Coarse-grained list
         double avg_coarse = 0;
         for (int r = 0; r < config.repeats; ++r) {
             double result = run_once<CoarseList>(run_config, "coarse");
@@ -237,7 +231,6 @@ int main(int argc, char** argv) {
             << config.p_insert << "," << config.p_remove << "," 
             << config.ops_per_thread << "," << config.key_range << "\n";
 
-        // Fine-grained list
         double avg_fine = 0;
         for (int r = 0; r < config.repeats; ++r) {
             double result = run_once<FineList>(run_config, "fine");

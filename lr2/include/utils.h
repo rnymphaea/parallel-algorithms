@@ -11,4 +11,3 @@ inline uint64_t now_ns() {
 }
 
 #endif // UTILS_H
-
