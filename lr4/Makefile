@@ -1,41 +1,92 @@
-TARGET = gpu_lab
 CXX = g++
-CXXFLAGS = -std=c++11 -Iinclude -O2 -Wall -Wextra
-LDFLAGS = -lOpenCL
+CXXFLAGS = -std=c++11 -O2 -Wall -Iinclude -DCL_TARGET_OPENCL_VERSION=120
+OPENCL_FLAGS = -lOpenCL -lpthread
+BUILDDIR = build
 
-SRC_DIR = src
-OBJ_DIR = obj
+# Разделы проекта
+MATRIX_SOURCES = $(wildcard src/matrix_ops/*.cpp)
+SORTER_SOURCES = $(wildcard src/sorter/*.cpp)
 
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
-OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
+MATRIX_OBJECTS = $(MATRIX_SOURCES:src/matrix_ops/%.cpp=$(BUILDDIR)/matrix_ops/%.o)
+SORTER_OBJECTS = $(SORTER_SOURCES:src/sorter/%.cpp=$(BUILDDIR)/sorter/%.o)
 
-.PHONY: all clean test bench
+# Исполняемые файлы
+MATRIX_TARGETS = $(BUILDDIR)/matrix_tests $(BUILDDIR)/matrix_benchmarks $(BUILDDIR)/matrix_demo
+SORTER_TARGETS = $(BUILDDIR)/sort_benchmarks $(BUILDDIR)/sort_tests $(BUILDDIR)/sort_demo
 
-all: $(TARGET)
+.PHONY: all matrix sorter clean plots
 
-$(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
+all: matrix sorter
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+# Сборка раздела матриц
+matrix: $(MATRIX_TARGETS)
+
+$(BUILDDIR)/matrix_ops/%.o: src/matrix_ops/%.cpp | $(BUILDDIR)
+	@mkdir -p $(BUILDDIR)/matrix_ops
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+# Сборка раздела сортировки
+sorter: $(SORTER_TARGETS)
 
-test: $(TARGET)
-	@echo "Running basic test..."
-	@./$(TARGET) --task all --size 10000 --rows 256 --cols 256 --k 256 --verify
+$(BUILDDIR)/sorter/%.o: src/sorter/%.cpp | $(BUILDDIR)
+	@mkdir -p $(BUILDDIR)/sorter
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-bench: $(TARGET)
-	@echo "Running benchmark..."
-	@./$(TARGET) --task all --size 100000 --rows 512 --cols 512 --k 512 --threads 1,2,4,8
+# Создание директории build
+$(BUILDDIR):
+	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILDDIR)/kernels
+	@cp kernels/* $(BUILDDIR)/kernels/
+
+# Правила сборки для матриц
+$(BUILDDIR)/matrix_tests: $(BUILDDIR)/matrix_ops/tests.o $(BUILDDIR)/matrix_ops/cpu.o $(BUILDDIR)/matrix_ops/gpu.o
+	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
+
+$(BUILDDIR)/matrix_benchmarks: $(BUILDDIR)/matrix_ops/benchmarks.o $(BUILDDIR)/matrix_ops/cpu.o $(BUILDDIR)/matrix_ops/gpu.o
+	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
+
+$(BUILDDIR)/matrix_demo: $(BUILDDIR)/matrix_ops/main.o $(BUILDDIR)/matrix_ops/cpu.o $(BUILDDIR)/matrix_ops/gpu.o
+	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
+
+# Правила сборки для сортировки
+$(BUILDDIR)/sort_benchmarks: $(BUILDDIR)/sorter/benchmark_runner.o $(BUILDDIR)/sorter/cpu.o $(BUILDDIR)/sorter/gpu.o $(BUILDDIR)/sorter/utils.o
+	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
+
+$(BUILDDIR)/sort_tests: $(BUILDDIR)/sorter/correctness_tester.o $(BUILDDIR)/sorter/cpu.o $(BUILDDIR)/sorter/gpu.o $(BUILDDIR)/sorter/utils.o
+	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
+
+$(BUILDDIR)/sort_demo: $(BUILDDIR)/sorter/main.o $(BUILDDIR)/sorter/cpu.o $(BUILDDIR)/sorter/gpu.o $(BUILDDIR)/sorter/utils.o
+	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
+
+# Цели для запуска
+run_matrix_tests: $(BUILDDIR)/matrix_tests
+	./$(BUILDDIR)/matrix_tests
+
+run_matrix_benchmarks: $(BUILDDIR)/matrix_benchmarks
+	./$(BUILDDIR)/matrix_benchmarks
+
+run_sort_benchmarks: $(BUILDDIR)/sort_benchmarks
+	./$(BUILDDIR)/sort_benchmarks
+
+run_sort_tests: $(BUILDDIR)/sort_tests
+	./$(BUILDDIR)/sort_tests
+
+plot_matrix: scripts/plot_matrix_results.py
+	python3 scripts/plot_matrix_results.py
+
+plot_sort: scripts/plot_sort_results.py
+	python3 scripts/plot_sort_results.py
+
+plots: plot_matrix plot_sort
 
 clean:
-	rm -rf $(OBJ_DIR) $(TARGET)
+	rm -rf $(BUILDDIR)
+	rm -f *.csv *.png
+	rm -rf results/*
 
-help:
-	@echo "Available targets:"
-	@echo "  all    - Build the program (default)"
-	@echo "  test   - Run basic test with verification"
-	@echo "  bench  - Run benchmark with different thread counts"
-	@echo "  clean  - Remove build artifacts"
+info:
+	@echo "OpenCL headers:"
+	@find /usr -name "opencl.h" 2>/dev/null || echo "Not found"
+	@echo ""
+	@echo "OpenCL libraries:"
+	@find /usr -name "libOpenCL*" 2>/dev/null || echo "Not found"
