@@ -63,7 +63,7 @@ bool MatrixGpu::initialize() {
         kernel_simple_ = clCreateKernel(program_, "matrix_multiply_simple", &err);
         checkError(err, "clCreateKernel (simple)");
         
-        kernel_blocked_ = clCreateKernel(program_, "matrix_04_multiply_via_local_memory", &err);
+        kernel_blocked_ = clCreateKernel(program_, "matrix_multiply_blocked", &err);
         checkError(err, "clCreateKernel (blocked)");
         
         initialized_ = true;
