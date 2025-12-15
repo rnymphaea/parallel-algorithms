@@ -1,92 +1,74 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -O2 -Wall -Iinclude -DCL_TARGET_OPENCL_VERSION=120
-OPENCL_FLAGS = -lOpenCL -lpthread
-BUILDDIR = build
+OPENCL_FLAGS = -lOpenCL -pthread
+BINDIR = bin
 
-# Разделы проекта
-MATRIX_SOURCES = $(wildcard src/matrix_ops/*.cpp)
-SORTER_SOURCES = $(wildcard src/sorter/*.cpp)
+SOURCES := $(wildcard src/*.cpp)
+OBJECTS := $(SOURCES:src/%.cpp=$(BINDIR)/%.o)
 
-MATRIX_OBJECTS = $(MATRIX_SOURCES:src/matrix_ops/%.cpp=$(BUILDDIR)/matrix_ops/%.o)
-SORTER_OBJECTS = $(SORTER_SOURCES:src/sorter/%.cpp=$(BUILDDIR)/sorter/%.o)
+MATRIX_BENCH_OBJS = $(BINDIR)/MatrixBenchmarks.o $(BINDIR)/MatrixCpu.o $(BINDIR)/MatrixGpu.o
+MATRIX_TEST_OBJS = $(BINDIR)/MatrixTests.o $(BINDIR)/MatrixCpu.o $(BINDIR)/MatrixGpu.o
+MATRIX_DEMO_OBJS = $(BINDIR)/MatrixDemo.o $(BINDIR)/MatrixCpu.o $(BINDIR)/MatrixGpu.o
 
-# Исполняемые файлы
-MATRIX_TARGETS = $(BUILDDIR)/matrix_tests $(BUILDDIR)/matrix_benchmarks $(BUILDDIR)/matrix_demo
-SORTER_TARGETS = $(BUILDDIR)/sort_benchmarks $(BUILDDIR)/sort_tests $(BUILDDIR)/sort_demo
+SORT_BENCH_OBJS = $(BINDIR)/SortBenchmarks.o $(BINDIR)/SortCpu.o $(BINDIR)/SortGpu.o $(BINDIR)/SortUtils.o
+SORT_TEST_OBJS = $(BINDIR)/SortCorrectness.o $(BINDIR)/SortCpu.o $(BINDIR)/SortGpu.o $(BINDIR)/SortUtils.o
+SORT_DEMO_OBJS = $(BINDIR)/SortDemo.o $(BINDIR)/SortCpu.o $(BINDIR)/SortGpu.o $(BINDIR)/SortUtils.o
 
-.PHONY: all matrix sorter clean plots
+.PHONY: all clean plots
 
-all: matrix sorter
+all: $(BINDIR)/MatrixBenchmarks $(BINDIR)/MatrixTests $(BINDIR)/MatrixDemo \
+     $(BINDIR)/SortBenchmarks $(BINDIR)/SortCorrectness $(BINDIR)/SortDemo
 
-# Сборка раздела матриц
-matrix: $(MATRIX_TARGETS)
+$(BINDIR):
+	@mkdir -p $(BINDIR)
 
-$(BUILDDIR)/matrix_ops/%.o: src/matrix_ops/%.cpp | $(BUILDDIR)
-	@mkdir -p $(BUILDDIR)/matrix_ops
+$(BINDIR)/%.o: src/%.cpp | $(BINDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Сборка раздела сортировки
-sorter: $(SORTER_TARGETS)
-
-$(BUILDDIR)/sorter/%.o: src/sorter/%.cpp | $(BUILDDIR)
-	@mkdir -p $(BUILDDIR)/sorter
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Создание директории build
-$(BUILDDIR):
-	@mkdir -p $(BUILDDIR)
-	@mkdir -p $(BUILDDIR)/kernels
-	@cp kernels/* $(BUILDDIR)/kernels/
-
-# Правила сборки для матриц
-$(BUILDDIR)/matrix_tests: $(BUILDDIR)/matrix_ops/tests.o $(BUILDDIR)/matrix_ops/cpu.o $(BUILDDIR)/matrix_ops/gpu.o
+$(BINDIR)/MatrixBenchmarks: $(MATRIX_BENCH_OBJS)
 	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
 
-$(BUILDDIR)/matrix_benchmarks: $(BUILDDIR)/matrix_ops/benchmarks.o $(BUILDDIR)/matrix_ops/cpu.o $(BUILDDIR)/matrix_ops/gpu.o
+$(BINDIR)/MatrixTests: $(MATRIX_TEST_OBJS)
 	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
 
-$(BUILDDIR)/matrix_demo: $(BUILDDIR)/matrix_ops/main.o $(BUILDDIR)/matrix_ops/cpu.o $(BUILDDIR)/matrix_ops/gpu.o
+$(BINDIR)/MatrixDemo: $(MATRIX_DEMO_OBJS)
 	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
 
-# Правила сборки для сортировки
-$(BUILDDIR)/sort_benchmarks: $(BUILDDIR)/sorter/benchmark_runner.o $(BUILDDIR)/sorter/cpu.o $(BUILDDIR)/sorter/gpu.o $(BUILDDIR)/sorter/utils.o
+$(BINDIR)/SortBenchmarks: $(SORT_BENCH_OBJS)
 	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
 
-$(BUILDDIR)/sort_tests: $(BUILDDIR)/sorter/correctness_tester.o $(BUILDDIR)/sorter/cpu.o $(BUILDDIR)/sorter/gpu.o $(BUILDDIR)/sorter/utils.o
+$(BINDIR)/SortCorrectness: $(SORT_TEST_OBJS)
 	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
 
-$(BUILDDIR)/sort_demo: $(BUILDDIR)/sorter/main.o $(BUILDDIR)/sorter/cpu.o $(BUILDDIR)/sorter/gpu.o $(BUILDDIR)/sorter/utils.o
+$(BINDIR)/SortDemo: $(SORT_DEMO_OBJS)
 	$(CXX) $^ -o $@ $(OPENCL_FLAGS)
 
-# Цели для запуска
-run_matrix_tests: $(BUILDDIR)/matrix_tests
-	./$(BUILDDIR)/matrix_tests
+run_matrix_tests: $(BINDIR)/MatrixTests
+	@echo "Running Matrix Tests..."
+	@./$(BINDIR)/MatrixTests
 
-run_matrix_benchmarks: $(BUILDDIR)/matrix_benchmarks
-	./$(BUILDDIR)/matrix_benchmarks
+run_matrix_benchmarks: $(BINDIR)/MatrixBenchmarks
+	@echo "Running Matrix Benchmarks..."
+	@./$(BINDIR)/MatrixBenchmarks
 
-run_sort_benchmarks: $(BUILDDIR)/sort_benchmarks
-	./$(BUILDDIR)/sort_benchmarks
+run_sort_benchmarks: $(BINDIR)/SortBenchmarks
+	@echo "Running Sort Benchmarks..."
+	@./$(BINDIR)/SortBenchmarks
 
-run_sort_tests: $(BUILDDIR)/sort_tests
-	./$(BUILDDIR)/sort_tests
+run_sort_tests: $(BINDIR)/SortCorrectness
+	@echo "Running Sort Correctness Tests..."
+	@./$(BINDIR)/SortCorrectness
 
-plot_matrix: scripts/plot_matrix_results.py
-	python3 scripts/plot_matrix_results.py
+plot_matrix: plot_matrix_results.py
+	@echo "Generating matrix plots..."
+	@python3 plot_matrix_results.py
 
-plot_sort: scripts/plot_sort_results.py
-	python3 scripts/plot_sort_results.py
+plot_sort: plot_sort_results.py
+	@echo "Generating sort plots..."
+	@python3 plot_sort_results.py
 
 plots: plot_matrix plot_sort
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BINDIR)
 	rm -f *.csv *.png
-	rm -rf results/*
-
-info:
-	@echo "OpenCL headers:"
-	@find /usr -name "opencl.h" 2>/dev/null || echo "Not found"
-	@echo ""
-	@echo "OpenCL libraries:"
-	@find /usr -name "libOpenCL*" 2>/dev/null || echo "Not found"

@@ -1,10 +1,10 @@
-#include "../include/matrix_ops/cpu.hpp"
+#include "MatrixCpu.hpp"
 #include <iostream>
 #include <vector>
 #include <thread>
 #include <algorithm>
 
-std::vector<float> MatrixCPU::multiply(
+std::vector<float> MatrixCpu::multiply(
     const std::vector<float>& A,
     const std::vector<float>& B,
     int M, int N, int K,
@@ -43,7 +43,7 @@ std::vector<float> MatrixCPU::multiply(
     return C;
 }
 
-void MatrixCPU::threadedMultiply(
+void MatrixCpu::threadedMultiply(
     const std::vector<float>& A,
     const std::vector<float>& B,
     std::vector<float>& C,
@@ -61,7 +61,7 @@ void MatrixCPU::threadedMultiply(
     }
 }
 
-std::vector<float> MatrixCPU::multiplyBlocked(
+std::vector<float> MatrixCpu::multiplyBlocked(
     const std::vector<float>& A,
     const std::vector<float>& B,
     int M, int N, int K,
@@ -113,7 +113,7 @@ std::vector<float> MatrixCPU::multiplyBlocked(
     return C;
 }
 
-void MatrixCPU::threadedMultiplyBlocked(
+void MatrixCpu::threadedMultiplyBlocked(
     const std::vector<float>& A,
     const std::vector<float>& B,
     std::vector<float>& C,

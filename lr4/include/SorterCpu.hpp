@@ -3,22 +3,20 @@
 
 #include <vector>
 #include <thread>
-#include <algorithm>
-#include <future>
 #include <atomic>
 
-struct CPUConfig {
+struct CpuConfig {
     int num_threads = 1;
     bool use_std_sort = false;
 };
 
-class SorterCPU {
+class SorterCpu {
 public:
-    static void sort(std::vector<int>& array, const CPUConfig& config = CPUConfig());
-    static void parallelSort(std::vector<int>& array, const CPUConfig& config = CPUConfig());
+    static void sort(std::vector<int>& array, const CpuConfig& config = CpuConfig());
+    static void parallelSort(std::vector<int>& array, const CpuConfig& config = CpuConfig());
     static void stdSort(std::vector<int>& array);
     
-    static double sortWithProfiling(std::vector<int>& array, const CPUConfig& config = CPUConfig());
+    static double sortWithProfiling(std::vector<int>& array, const CpuConfig& config = CpuConfig());
     
 private:
     static void iterativeMergeSort(std::vector<int>& array, std::vector<int>& temp);

@@ -3,13 +3,13 @@
 
 #include <vector>
 #include <CL/opencl.h>
-#include <memory>
+#include <string>
 
-struct GPUConfig {
+struct GpuConfig {
     size_t work_group_size = 256;
 };
 
-class SorterGPU {
+class SorterGpu {
 private:
     cl_context context_;
     cl_command_queue queue_;
@@ -18,11 +18,11 @@ private:
     cl_device_id device_;
     
 public:
-    SorterGPU();
-    ~SorterGPU();
+    SorterGpu();
+    ~SorterGpu();
     
-    void sort(std::vector<int>& array, const GPUConfig& config = GPUConfig());
-    double sortWithProfiling(std::vector<int>& array, const GPUConfig& config = GPUConfig());
+    void sort(std::vector<int>& array, const GpuConfig& config = GpuConfig());
+    double sortWithProfiling(std::vector<int>& array, const GpuConfig& config = GpuConfig());
     
     size_t getMaxWorkGroupSize() const;
     size_t getPreferredWorkGroupSize() const;

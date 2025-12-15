@@ -1,12 +1,13 @@
-#include "../include/sorter/cpu.hpp"
+#include "SorterCpu.hpp"
 #include <iostream>
 #include <future>
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <chrono>
 
-void SorterCPU::sort(std::vector<int>& array, const CPUConfig& config) {
+void SorterCpu::sort(std::vector<int>& array, const CpuConfig& config) {
     if (array.size() <= 1) return;
     
     if (config.use_std_sort) {
@@ -19,25 +20,25 @@ void SorterCPU::sort(std::vector<int>& array, const CPUConfig& config) {
     }
 }
 
-void SorterCPU::parallelSort(std::vector<int>& array, const CPUConfig& config) {
+void SorterCpu::parallelSort(std::vector<int>& array, const CpuConfig& config) {
     if (array.size() <= 1) return;
     
     std::vector<int> temp(array.size());
     parallelIterativeMergeSort(array, temp, config.num_threads);
 }
 
-void SorterCPU::stdSort(std::vector<int>& array) {
+void SorterCpu::stdSort(std::vector<int>& array) {
     std::sort(array.begin(), array.end());
 }
 
-double SorterCPU::sortWithProfiling(std::vector<int>& array, const CPUConfig& config) {
+double SorterCpu::sortWithProfiling(std::vector<int>& array, const CpuConfig& config) {
     auto start_time = std::chrono::high_resolution_clock::now();
     sort(array, config);
     auto end_time = std::chrono::high_resolution_clock::now();
     return std::chrono::duration<double>(end_time - start_time).count();
 }
 
-void SorterCPU::iterativeMergeSort(std::vector<int>& array, std::vector<int>& temp) {
+void SorterCpu::iterativeMergeSort(std::vector<int>& array, std::vector<int>& temp) {
     int n = array.size();
     
     for (int width = 1; width < n; width *= 2) {
@@ -54,7 +55,7 @@ void SorterCPU::iterativeMergeSort(std::vector<int>& array, std::vector<int>& te
     }
 }
 
-void SorterCPU::parallelIterativeMergeSort(std::vector<int>& array, std::vector<int>& temp, int num_threads) {
+void SorterCpu::parallelIterativeMergeSort(std::vector<int>& array, std::vector<int>& temp, int num_threads) {
     int n = array.size();
     
     num_threads = std::min(num_threads, n / 2);
@@ -83,7 +84,7 @@ void SorterCPU::parallelIterativeMergeSort(std::vector<int>& array, std::vector<
     }
 }
 
-void SorterCPU::workerThread(std::vector<int>& array, std::vector<int>& temp, 
+void SorterCpu::workerThread(std::vector<int>& array, std::vector<int>& temp, 
                             int width, int n, int thread_id, int num_threads,
                             std::atomic<int>& barrier) {
     int total_merges = (n + 2 * width - 1) / (2 * width);
@@ -107,7 +108,7 @@ void SorterCPU::workerThread(std::vector<int>& array, std::vector<int>& temp,
     }
 }
 
-void SorterCPU::merge(std::vector<int>& array, std::vector<int>& temp, 
+void SorterCpu::merge(std::vector<int>& array, std::vector<int>& temp, 
                      int left, int middle, int right) {
     int i = left, j = middle, k = left;
     

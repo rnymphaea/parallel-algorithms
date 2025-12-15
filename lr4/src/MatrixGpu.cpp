@@ -1,12 +1,12 @@
-#include "../include/matrix_ops/gpu.hpp"
+#include "MatrixGpu.hpp"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
 #include <memory>
-#include <chrono>  // Добавлен этот заголовок
+#include <chrono>
 
-MatrixGPU::MatrixGPU() : 
+MatrixGpu::MatrixGpu() : 
     context_(nullptr), 
     queue_(nullptr), 
     program_(nullptr), 
@@ -16,7 +16,7 @@ MatrixGPU::MatrixGPU() :
     initialized_(false) {
 }
 
-MatrixGPU::~MatrixGPU() {
+MatrixGpu::~MatrixGpu() {
     if (kernel_simple_) clReleaseKernel(kernel_simple_);
     if (kernel_blocked_) clReleaseKernel(kernel_blocked_);
     if (program_) clReleaseProgram(program_);
@@ -24,13 +24,13 @@ MatrixGPU::~MatrixGPU() {
     if (context_) clReleaseContext(context_);
 }
 
-void MatrixGPU::checkError(cl_int err, const std::string& operation) {
+void MatrixGpu::checkError(cl_int err, const std::string& operation) {
     if (err != CL_SUCCESS) {
         throw std::runtime_error(operation + " failed with error: " + std::to_string(err));
     }
 }
 
-bool MatrixGPU::initialize() {
+bool MatrixGpu::initialize() {
     try {
         device_ = getDefaultDevice();
         
@@ -38,7 +38,6 @@ bool MatrixGPU::initialize() {
         context_ = clCreateContext(nullptr, 1, &device_, nullptr, nullptr, &err);
         checkError(err, "clCreateContext");
         
-        // Используем совместимую функцию создания очереди
         cl_command_queue_properties props = 0;
         queue_ = clCreateCommandQueue(context_, device_, props, &err);
         checkError(err, "clCreateCommandQueue");
@@ -56,7 +55,8 @@ bool MatrixGPU::initialize() {
             clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
             std::vector<char> log(logSize);
             clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, logSize, log.data(), nullptr);
-            std::cerr << "OpenCL build failed:\n" << log.data() << std::endl;
+            std::cerr << "OpenCL build failed:" << std::endl;
+            std::cerr << log.data() << std::endl;
             return false;
         }
         
@@ -75,7 +75,7 @@ bool MatrixGPU::initialize() {
     }
 }
 
-std::vector<float> MatrixGPU::multiply(
+std::vector<float> MatrixGpu::multiply(
     const std::vector<float>& A,
     const std::vector<float>& B,
     int M, int N, int K,
@@ -140,7 +140,7 @@ std::vector<float> MatrixGPU::multiply(
     }
 }
 
-std::vector<float> MatrixGPU::multiplyBlocked(
+std::vector<float> MatrixGpu::multiplyBlocked(
     const std::vector<float>& A,
     const std::vector<float>& B,
     int M, int N, int K,
@@ -219,7 +219,7 @@ std::vector<float> MatrixGPU::multiplyBlocked(
     }
 }
 
-std::string MatrixGPU::readKernelFile(const std::string& filename) {
+std::string MatrixGpu::readKernelFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         throw std::runtime_error("Cannot open kernel file: " + filename);
@@ -230,7 +230,7 @@ std::string MatrixGPU::readKernelFile(const std::string& filename) {
     return content;
 }
 
-cl_device_id MatrixGPU::getDefaultDevice() {
+cl_device_id MatrixGpu::getDefaultDevice() {
     cl_platform_id platform = nullptr;
     cl_device_id device = nullptr;
     cl_int err;

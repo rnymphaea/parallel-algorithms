@@ -2,9 +2,9 @@
 #include <iomanip>
 #include <vector>
 #include <fstream>
-#include "../include/sorter/gpu.hpp"
-#include "../include/sorter/cpu.hpp"
-#include "../include/sorter/utils.hpp"
+#include "SorterGpu.hpp"
+#include "SorterCpu.hpp"
+#include "SortUtils.hpp"
 
 class CorrectnessTester {
 private:
@@ -32,17 +32,17 @@ public:
         auto data_cpu_parallel = original_data;
         auto data_cpu_std = original_data;
         
-        SorterGPU gpu_sorter;
+        SorterGpu gpu_sorter;
         gpu_sorter.sort(data_gpu);
         bool gpu_correct = isSorted(data_gpu);
         
-        SorterCPU::sort(data_cpu_single);
+        SorterCpu::sort(data_cpu_single);
         bool cpu_single_correct = isSorted(data_cpu_single);
         
-        SorterCPU::parallelSort(data_cpu_parallel);
+        SorterCpu::parallelSort(data_cpu_parallel);
         bool cpu_parallel_correct = isSorted(data_cpu_parallel);
         
-        SorterCPU::stdSort(data_cpu_std);
+        SorterCpu::stdSort(data_cpu_std);
         bool cpu_std_correct = isSorted(data_cpu_std);
         
         bool all_correct = gpu_correct && cpu_single_correct && cpu_parallel_correct && cpu_std_correct;
@@ -52,10 +52,10 @@ public:
                 << cpu_parallel_correct << "," << cpu_std_correct << ","
                 << all_correct << "\n";
         
-        std::cout << "  GPU: " << (gpu_correct ? "✓" : "✗") << "  "
-                  << "CPU Single: " << (cpu_single_correct ? "✓" : "✗") << "  "
-                  << "CPU Parallel: " << (cpu_parallel_correct ? "✓" : "✗") << "  "
-                  << "CPU STD: " << (cpu_std_correct ? "✓" : "✗") << "  "
+        std::cout << "  GPU: " << (gpu_correct ? "OK" : "FAIL") << "  "
+                  << "CPU Single: " << (cpu_single_correct ? "OK" : "FAIL") << "  "
+                  << "CPU Parallel: " << (cpu_parallel_correct ? "OK" : "FAIL") << "  "
+                  << "CPU STD: " << (cpu_std_correct ? "OK" : "FAIL") << "  "
                   << "Overall: " << (all_correct ? "PASS" : "FAIL") << std::endl;
         
         if (!all_correct && size <= 20) {
@@ -70,16 +70,24 @@ public:
     
     void runAllTests() {
         std::cout << "=== Sorting Correctness Tests ===" << std::endl;
+        std::cout << std::endl;
         
         int test_id = 1;
         
         testRandomArray(10, test_id++);
+        std::cout << std::endl;
         testRandomArray(16, test_id++);
+        std::cout << std::endl;
         testRandomArray(32, test_id++);
+        std::cout << std::endl;
         testRandomArray(1000, test_id++);
+        std::cout << std::endl;
         testRandomArray(5000, test_id++);
+        std::cout << std::endl;
         testRandomArray(10000, test_id++);
+        std::cout << std::endl;
         testRandomArray(50000, test_id++);
+        std::cout << std::endl;
         
         std::cout << "=== Tests Complete ===" << std::endl;
         std::cout << "Results saved to results/sort_correctness.csv" << std::endl;

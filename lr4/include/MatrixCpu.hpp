@@ -3,10 +3,8 @@
 
 #include <vector>
 #include <thread>
-#include <functional>
-#include <algorithm>
 
-class MatrixCPU {
+class MatrixCpu {
 public:
     static std::vector<float> multiply(const std::vector<float>& A,
                                        const std::vector<float>& B,

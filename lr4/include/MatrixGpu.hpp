@@ -4,12 +4,11 @@
 #include <vector>
 #include <string>
 #include <CL/opencl.h>
-#include <memory>
 
-class MatrixGPU {
+class MatrixGpu {
 public:
-    MatrixGPU();
-    ~MatrixGPU();
+    MatrixGpu();
+    ~MatrixGpu();
     
     bool initialize();
     

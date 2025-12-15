@@ -1,4 +1,4 @@
-#include "../include/sorter/utils.hpp"
+#include "SortUtils.hpp"
 #include <iostream>
 #include <random>
 

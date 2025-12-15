@@ -1,11 +1,11 @@
-#include "../include/sorter/gpu.hpp"
+#include "SorterGpu.hpp"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
-#include <chrono>  // Добавлен этот заголовок
+#include <chrono>
 
-SorterGPU::SorterGPU() : 
+SorterGpu::SorterGpu() : 
     context_(nullptr), 
     queue_(nullptr), 
     program_(nullptr), 
@@ -27,7 +27,6 @@ SorterGPU::SorterGPU() :
     context_ = clCreateContext(nullptr, 1, &device_, nullptr, nullptr, &err);
     checkError(err, "clCreateContext");
     
-    // Используем совместимую функцию создания очереди
     cl_command_queue_properties props = 0;
     queue_ = clCreateCommandQueue(context_, device_, props, &err);
     checkError(err, "clCreateCommandQueue");
@@ -58,7 +57,8 @@ SorterGPU::SorterGPU() :
         clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, 0, nullptr, &log_size);
         std::vector<char> log(log_size);
         clGetProgramBuildInfo(program_, device_, CL_PROGRAM_BUILD_LOG, log_size, log.data(), nullptr);
-        std::cerr << "Build error:\n" << log.data() << std::endl;
+        std::cerr << "Build error:" << std::endl;
+        std::cerr << log.data() << std::endl;
         throw std::runtime_error("OpenCL program build failed");
     }
     
@@ -68,20 +68,20 @@ SorterGPU::SorterGPU() :
     std::cout << "GPU Sorter initialized successfully" << std::endl;
 }
 
-SorterGPU::~SorterGPU() {
+SorterGpu::~SorterGpu() {
     if (merge_kernel_) clReleaseKernel(merge_kernel_);
     if (program_) clReleaseProgram(program_);
     if (queue_) clReleaseCommandQueue(queue_);
     if (context_) clReleaseContext(context_);
 }
 
-void SorterGPU::checkError(cl_int err, const std::string& operation) {
+void SorterGpu::checkError(cl_int err, const std::string& operation) {
     if (err != CL_SUCCESS) {
         throw std::runtime_error(operation + " failed with error: " + std::to_string(err));
     }
 }
 
-void SorterGPU::sort(std::vector<int>& array, const GPUConfig& config) {
+void SorterGpu::sort(std::vector<int>& array, const GpuConfig& config) {
     int size = static_cast<int>(array.size());
     if (size <= 1) return;
     
@@ -142,14 +142,14 @@ void SorterGPU::sort(std::vector<int>& array, const GPUConfig& config) {
     clReleaseMemObject(buffer_b);
 }
 
-double SorterGPU::sortWithProfiling(std::vector<int>& array, const GPUConfig& config) {
+double SorterGpu::sortWithProfiling(std::vector<int>& array, const GpuConfig& config) {
     auto start_time = std::chrono::high_resolution_clock::now();
     sort(array, config);
     auto end_time = std::chrono::high_resolution_clock::now();
     return std::chrono::duration<double>(end_time - start_time).count();
 }
 
-size_t SorterGPU::getMaxWorkGroupSize() const {
+size_t SorterGpu::getMaxWorkGroupSize() const {
     size_t max_size;
     cl_int err = clGetKernelWorkGroupInfo(merge_kernel_, device_, CL_KERNEL_WORK_GROUP_SIZE, 
                                          sizeof(size_t), &max_size, nullptr);
@@ -160,7 +160,7 @@ size_t SorterGPU::getMaxWorkGroupSize() const {
     return max_size;
 }
 
-size_t SorterGPU::getPreferredWorkGroupSize() const {
+size_t SorterGpu::getPreferredWorkGroupSize() const {
     size_t preferred_size;
     cl_int err = clGetKernelWorkGroupInfo(merge_kernel_, device_, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, 
                                          sizeof(size_t), &preferred_size, nullptr);
@@ -171,7 +171,7 @@ size_t SorterGPU::getPreferredWorkGroupSize() const {
     return preferred_size;
 }
 
-std::string SorterGPU::getDeviceInfo() const {
+std::string SorterGpu::getDeviceInfo() const {
     std::string info;
     try {
         char device_name[256];
