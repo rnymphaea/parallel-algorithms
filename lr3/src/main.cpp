@@ -40,7 +40,7 @@ void exportMatrixResults() {
     outFile << "Algorithm,Size,Threads,Time\n";
     
     std::vector<size_t> sizes = {64, 128, 256, 512, 1024, 2048};
-    std::vector<size_t> threads = {1, 2};
+    std::vector<size_t> threads = {1, 2, 4, 8};
     
     for (size_t size : sizes) {
         std::cout << "\nTesting matrix " << size << "x" << size << "..." << std::endl;
@@ -87,6 +87,7 @@ void exportSortingResults() {
     outFile << "Algorithm,Size,Threads,Time\n";
     
     std::vector<size_t> sizes = {10000, 50000, 100000, 500000, 1000000, 5000000, 10000000};
+    std::vector<size_t> threads = {1, 2, 4, 8};
     
     for (size_t size : sizes) {
         std::cout << "\nTesting array " << size << " elements..." << std::endl;
@@ -110,15 +111,17 @@ void exportSortingResults() {
             std::cout << "  Single-thread merge sort: " << time << " s" << std::endl;
         }
         
-        {
+        for (size_t t : threads) {
+            if (t == 1) continue;
+            
             std::vector<int> testArray = baseArray;
-            ParallelSort sorter(2);
+            ParallelSort sorter(t);
             TestTimer timer;
             sorter.sort(testArray);
             double time = timer.elapsed();
-            outFile << "parallel_merge_sort," << size << "," << 2 << "," 
+            outFile << "parallel_merge_sort," << size << "," << t << "," 
                     << std::fixed << std::setprecision(6) << time << "\n";
-            std::cout << "  Parallel merge sort (2 threads): " << time << " s" << std::endl;
+            std::cout << "  Parallel merge sort (" << t << " threads): " << time << " s" << std::endl;
         }
     }
     
@@ -156,10 +159,10 @@ void testCorrectness() {
     }
     
     std::vector<int> single = array;
+    ParallelSort sorter(4);
     std::vector<int> parallel = array;
     
     ParallelSort::singleThreadSort(single);
-    ParallelSort sorter(2);
     sorter.sort(parallel);
     
     bool same = true;
