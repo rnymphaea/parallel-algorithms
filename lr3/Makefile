@@ -23,7 +23,7 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 clean:
-	rm -rf $(OBJ_DIR) $(TARGET)
+	rm -rf $(OBJ_DIR) $(TARGET) *.png *.pdf *.csv *.txt
 
 test: $(TARGET)
 	./$(TARGET) --test

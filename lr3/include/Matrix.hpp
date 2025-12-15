@@ -38,7 +38,6 @@ public:
     
     void print() const;
     
-    // For sorting comparison
     std::vector<int> toVector() const;
     static Matrix fromVector(const std::vector<int>& vec, size_t rows, size_t cols);
 };
